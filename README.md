@@ -2,8 +2,12 @@
 C♭ (pronounced c-flat, or "cess" in Swedish) is like C but one step lower*, just like you would expect. It also goes by the name mouanga-assembly due to the simple reason that the developer of this language was mystically compelled (forced) to name it that way.
 
 \* Lower in terms of creativity, usability, readability, well in every single positive metric actually.
+**Note: When writing C♭ code, it's best practice to only use lowercase letters.**
+
 
 ## Registers
+
+
 
 **A**, **B** and **C** are normal registers. **S** is read by the **SPC** instruction, which can then modify the value of **A**.
 
