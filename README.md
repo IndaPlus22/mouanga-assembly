@@ -7,7 +7,7 @@ C♭ (pronounced c-flat, or "cess" in Swedish) is like C but one step lower*, ju
 ## Instruction set
 
 
-NUL                 (0b000) - do &#09 nothing
+NUL                 (0b000) - do &nbsp; nothing
 
 ADD $r0, $r1, $r2   (0b001) - calculate $r1 + $r2 and store it in $r0. Note: all registries are unsigned and can overflow
 
