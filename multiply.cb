@@ -1,0 +1,35 @@
+# Multiply
+# t0 is c (the loop counter)
+# t1 is a
+# t2 is b
+# t3 is s 
+beq c a END # if loop not finished then continue, else do nothing
+adv c c 1   # increment counter
+add s s 
+
+# Modus operando (multiply):
+# Calculates a * b and stores it in a.
+
+    c = a      # set c 0
+               # add c a
+    if c != 0:
+        c -= 1 # adv c -1
+        a += b # add a b
+        jmp -3 # jmp -3
+    else:
+        jmp 3
+############################
+
+# Modus operando (factorial):
+
+        s = factorialnumber
+
+# Then loop:
+
+    if s != 0:
+        s -= 1
+        b = s
+        goto multiply
+    else:
+        end program
+
