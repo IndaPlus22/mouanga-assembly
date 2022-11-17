@@ -1,21 +1,21 @@
 use std::fs::File;
-use std::io::prelude::*;
+use std::io::*;
 
 // This program should read through every line.
 // If the line is valid code, convert it to an instruction (00..ff) and output it in a .cbx file
 // If the line is empty or starts with '#', go to next line.
 // If the line is invalid, do not assemble but instead return an error.
 
-fn throw(err: i16) -> String {
+fn throw(err: i16, line: u8) -> String {
     return match err {
-        0   => String::from("Assembly successful"),
-       -1   => String::from("Failed to assemble with error code -1 (RegError): Invalid register at X"),
-       -2   => String::from("Failed to assemble with error code -2 (OpError): Invalid instruction at X"),
-       -3   => String::from("Failed to assemble with error code -3 (NumError): Invalid value at X"),
-       -4   => String::from("Failed to assemble with error code -4 (SpaceError): Unexpected space at X"),
-       -5   => String::from("Failed to assemble with error code -5 (SelfJumpError): Self-referencing jump instruction at X"),
-       -6   => String::from("Failed to assemble with error code -6 (SegFaultError): Attmpted to jump to instruction X, but there are only Y instructions in the program"),
-       -128 => String::from("Failed to assemble with error code -128 (OtherError): Unexpected error. Have fun debugging this one :)"),
+        0   => format!("Assembly successful"),
+       -1   => format!("Failed to assemble with error code -1 (RegError): Invalid register at line {}", line + 1),
+       -2   => format!("Failed to assemble with error code -2 (OpError): Invalid instruction at line {}", line + 1),
+       -3   => format!("Failed to assemble with error code -3 (NumError): Invalid value at line {}", line + 1),
+       -4   => format!("Failed to assemble with error code -4 (SpaceError): Unexpected space at line {}", line + 1),
+       -5   => format!("Failed to assemble with error code -5 (SelfJumpError): Self-referencing jump instruction at line {}", line + 1),
+       -6   => format!("Failed to assemble with error code -6 (SegFaultError): Attempted invalid jump at line {}", line + 1),
+       -128 => format!("Failed to assemble with error code -128 (OtherError): Unexpected error. Have fun debugging this one :)"),
        _ => panic!("Failed to assemble with UNEXPECTED error code ({}). This should never happen.", err),
    };
 }
@@ -24,20 +24,39 @@ fn main() {
     let file: String = String::new();
     let x: i16 = assemble(file);
 //    println!("{}", throw(x));
-    let input: String = String::new();
     let output: String = String::new();
 //    let z = instruction_to_hex(String::from("15"));
 //    println!("{}", z)
 
-let line_output = line_to_instruction("adv a 0".to_string(), 0, 10);
+let mut line_output = line_to_instruction("adv a 0".to_string(), 0, 10);
 
 if line_output >= 0 {
 println!("{}", 
-bin_format(line_output
+swedish_format(line_output
 ));
 } else {
-    println!("{}", throw(line_output));
+    println!("{}", throw(line_output, 0));
 }
+
+loop {
+let mut input = String::new();
+stdin().read_line(&mut input).expect("");
+input = input.trim().to_string();
+println!("{:?}", input);
+
+line_output = line_to_instruction(input, 0, 10);
+
+if line_output >= 0 {
+println!("\n{}\n{}\n", 
+swedish_format(line_output),
+bin_format(line_output)
+);
+} else {
+    println!("\n{}\n", throw(line_output, 0));
+}
+
+}
+
 }
 
 /// Attempts to assemble a .cb file, creating a .cbx file in the process.
@@ -210,6 +229,71 @@ fn bin_format(num: i16) -> String {
         }
     }
     return format!("{}{:b}", start_string, num);
+}
+
+fn swedish_format(num: i16) -> String {
+
+    if num == 0 {
+        return String::from("noll");
+    }
+
+    let mut hundred_string = match (num / 100) {
+        1 => "etthundra",
+        2 => "tvåhundra",
+        _ => "",
+    }.to_string();
+    let mut ten_string = String::new();
+    let mut one_string = String::new();
+
+    if num % 100 <= 10 || num % 100 >= 20 {
+    ten_string = match (num - 100 * (num/100)) / 10{
+        0 => "",
+        1 => "tio",
+        2 => "tjugo",
+        3 => "trettio",
+        4 => "fyrtio",
+        5 => "femtio",
+        6 => "sextio",
+        7 => "sjuttio",
+        8 => "åttio",
+        9 => "nittio",
+        _ => panic!("Error when calculating ten_string for {}", num),
+    }.to_string();
+
+    one_string = match (num % 10) {
+        0 => "",
+        1 => "ett",
+        2 => "två",
+        3 => "tre",
+        4 => "fyra",
+        5 => "fem",
+        6 => "sex",
+        7 => "sju",
+        8 => "åtta",
+        9 => "nio",
+        _ => panic!("Math error")
+    }.to_string();
+
+} else {
+    ten_string = match (num % 100) {
+        11 => "elva",
+        12 => "tolv",
+        13 => "tretton",
+        14 => "fjorton",
+        15 => "femton",
+        16 => "sexton",
+        17 => "sjutton",
+        18 => "arton",
+        19 => "nitton",
+        _ => panic!("Error when calculating ten_string for teen number {}", num),
+    }.to_string();
+    one_string = String::new();
+}
+
+hundred_string.push_str(&ten_string);
+hundred_string.push_str(&one_string);
+
+return hundred_string;
 }
 
 // format!("{:b}", line_to_instruction("set a 4".to_string(), 0, 1)));
