@@ -15,7 +15,7 @@ fn throw(err: i16, line: u8) -> String {
         0   => format!("Assembly successful"),
        -1   => format!("Failed to assemble with error code -1 (RegError): Invalid register at line {}", line + 1),
        -2   => format!("Failed to assemble with error code -2 (OpError): Invalid instruction at line {}", line + 1),
-       -3   => format!("Failed to assemble with error code -3 (NumError): Invalid value at line {}", line + 1),
+       -3   => format!("Failed to assemble with error code -3 (ValueError): Invalid value at line {}", line + 1),
        -4   => format!("Failed to assemble with error code -4 (SpaceError): Unexpected space at line {}", line + 1),
        -5   => format!("Failed to assemble with error code -5 (SelfJumpError): Self-referencing jump instruction at line {}", line + 1),
        -6   => format!("Failed to assemble with error code -6 (SegFaultError): Attempted invalid jump at line {}", line + 1),
@@ -68,7 +68,7 @@ fn main() {
 Returns              0   on successful assembly
                     -1   on RegError         (invalid register)
                     -2   on OpError          (invalid instruction)
-                    -3   on NumError         (invalid value)
+                    -3   on ValueError         (invalid value)
                     -4   on SpaceError       (unexpected space; this mostly exists to help the user format correctly)
                     -5   on SelfJumpError    (attempting to jump to the same line)
                     -6   on SegFaultError    (attempting to jump to a line not in the program) [this is a horrible name for an error]

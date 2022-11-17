@@ -39,7 +39,7 @@ SPC                 (0b111 | 7) - performs an action depending on the value of *
 
 0x00000001  | 1  - get input through standard input, and store it in **S**
 
-0x00000002  | 2  - print **A** as integer
+0x00000002  | 2  - print **A** as integer in standard output
 
 0x00000003  | 3  - end program
 
