@@ -2,6 +2,7 @@
 C♭ (pronounced c-flat, or "cess" in Swedish) is like C but one step lower*, just like you would expect. It also goes by the name mouanga-assembly due to the simple reason that the developer of this language was mystically compelled (forced) to name it that way.
 
 \* Lower in terms of creativity, usability, readability, well in every single positive metric actually.
+
 **Note: When writing C♭ code, it's best practice to only use lowercase letters.**
 
 
@@ -14,19 +15,19 @@ C♭ (pronounced c-flat, or "cess" in Swedish) is like C but one step lower*, ju
 ## Instruction set
 
 
-ADV $r0, %val       (0b000 | 0) - set $r0 to $r0 + %val. Note: registers can overflow. %val can be negative.
+ADV $r0, %val       (0b000 | 0) - set $r0 to $r0 + %val. Note: registers can overflow.
 
 SET $r0, %val       (0b001 | 1) - set $r0 to %val
 
-CPY $r0, $r1        (0b010 | 2) - set $r0 to $r1
+SBV $r0, %val        (0b010 | 2) - set $r0 to $r0 - val.
 
 ADD $r0, $r1        (0b011 | 3) - set $r0 to $r0 + $r1. Note: registers can overflow
 
 SUB $r0, $r1        (0b100 | 4) - set $r0 to $r0 - $r1. Note: registers can underflow
 
-JMP %ln             (0b101 | 5) - jump to line number %ln
+JMP %val             (0b101 | 5) - jump to line number %val
 
-BEZ $r0, $ln        (0b110 | 6) - if $r0 is 0, jump to line $ln, else continue program
+BEZ $r0, $val        (0b110 | 6) - if $r0 is 0, jump to line %val, else continue program
 
 SPC                 (0b111 | 7) - performs an action depending on the value of **S**
 

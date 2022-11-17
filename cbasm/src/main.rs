@@ -9,7 +9,7 @@ use std::io::prelude::*;
 fn throw(err: i16) -> String {
     return match err {
         0   => String::from("Assembly successful"),
-       -1   => String::from("Failed to assemble with error code -1 (RegError): Invalid registry at X"),
+       -1   => String::from("Failed to assemble with error code -1 (RegError): Invalid register at X"),
        -2   => String::from("Failed to assemble with error code -2 (OpError): Invalid instruction at X"),
        -3   => String::from("Failed to assemble with error code -3 (NumError): Invalid value at X"),
        -4   => String::from("Failed to assemble with error code -4 (SpaceError): Unexpected space at X"),
@@ -29,10 +29,15 @@ fn main() {
 //    let z = instruction_to_hex(String::from("15"));
 //    println!("{}", z)
 
-println!("{}", 
-bin_format(line_to_instruction("set a 4".to_string(), 0, 1)
-));
+let line_output = line_to_instruction("adv a 0".to_string(), 0, 10);
 
+if line_output >= 0 {
+println!("{}", 
+bin_format(line_output
+));
+} else {
+    println!("{}", throw(line_output));
+}
 }
 
 /// Attempts to assemble a .cb file, creating a .cbx file in the process.
@@ -142,7 +147,7 @@ fn line_to_instruction(line: String, cur_line: u8, max_lines: u8) -> i16 {
     } else if (instruction / 0b00100000 == 0b101) {
         // jump
 
-        let jump_target: u8 = words[2].parse().unwrap();
+        let jump_target: u8 = words[1].parse().unwrap();
 
         if jump_target > max_lines {
             return -6; // SegFaultError
@@ -166,7 +171,7 @@ fn line_to_instruction(line: String, cur_line: u8, max_lines: u8) -> i16 {
             };
 
         // set the jump target
-        let jump_target: u8 = words[2].parse().unwrap();
+        let jump_target: u8 = words[1].parse().unwrap();
 
         if jump_target > max_lines {
             return -6; // SegFaultError
@@ -187,20 +192,22 @@ fn line_to_instruction(line: String, cur_line: u8, max_lines: u8) -> i16 {
 
 fn bin_format(num: i16) -> String {
     let mut start_string = "";
-    if num < 0b10 {
-        start_string = "0000000";
-    } else if num < 0b100 {
-        start_string = "000000";
-    } else if num < 0b1000 {
-        start_string = "00000"
-    } else if num < 0b10000 {
-        start_string = "0000";
-    } else if num < 0b100000 {
-        start_string = "000";
-    } else if num < 0b1000000 {
-        start_string = "00";
-    } else if num < 0b10000000 {
-        start_string = "0";
+    if num >= 0b0 {
+        if num < 0b10 {
+            start_string = "0000000";
+        } else if num < 0b100 {
+            start_string = "000000";
+        } else if num < 0b1000 {
+            start_string = "00000"
+        } else if num < 0b10000 {
+            start_string = "0000";
+        } else if num < 0b100000 {
+            start_string = "000";
+        } else if num < 0b1000000 {
+            start_string = "00";
+        } else if num < 0b10000000 {
+            start_string = "0";
+        }
     }
     return format!("{}{:b}", start_string, num);
 }
