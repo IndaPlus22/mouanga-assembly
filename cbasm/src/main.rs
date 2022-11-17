@@ -1,10 +1,14 @@
-use std::fs::File;
-use std::io::*;
+use std::fs;
+use std::io;
 
 // This program should read through every line.
 // If the line is valid code, convert it to an instruction (00..ff) and output it in a .cbx file
 // If the line is empty or starts with '#', go to next line.
 // If the line is invalid, do not assemble but instead return an error.
+
+fn show_error(err: i16, line: u8) -> () {
+    println!("{}", throw(err, line));
+}
 
 fn throw(err: i16, line: u8) -> String {
     return match err {
@@ -21,42 +25,42 @@ fn throw(err: i16, line: u8) -> String {
 }
 
 fn main() {
-    let file: String = String::new();
+    let file: String = String::from("C:/cbcode/script.cb");
     let x: i16 = assemble(file);
-//    println!("{}", throw(x));
+    println!("Assembled the file! Returned {x}");
+    //    println!("{}", throw(x));
     let output: String = String::new();
-//    let z = instruction_to_hex(String::from("15"));
-//    println!("{}", z)
+    //    let z = instruction_to_hex(String::from("15"));
+    //    println!("{}", z)
 
-let mut line_output = line_to_instruction("adv a 0".to_string(), 0, 10);
+    let mut line_output = line_to_instruction("adv a 0".to_string(), 0, 10);
 
-if line_output >= 0 {
-println!("{}", 
-swedish_format(line_output
-));
-} else {
-    println!("{}", throw(line_output, 0));
-}
+    if line_output >= 0 {
+        println!("{}", swedish_format(line_output));
+    } else {
+        println!("{}", throw(line_output, 0));
+    }
 
-loop {
-let mut input = String::new();
-stdin().read_line(&mut input).expect("");
-input = input.trim().to_string();
-println!("{:?}", input);
+    // Main loop
+    loop {
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("");
+        input = input.trim().to_string();
+        println!("{:?}", input);
 
-line_output = line_to_instruction(input, 0, 10);
+        line_output = line_to_instruction(input, 1, 10);
 
-if line_output >= 0 {
-println!("\n{}\n{}\n", 
-swedish_format(line_output),
-bin_format(line_output)
-);
-} else {
-    println!("\n{}\n", throw(line_output, 0));
-}
-
-}
-
+        if line_output >= 0 {
+            println!(
+                "\n{}\n{} (= {})\n",
+                swedish_format(line_output),
+                bin_format(line_output),
+                swedish_to_decimal(swedish_format(line_output))
+            );
+        } else {
+            println!("\n{}\n", throw(line_output, 0));
+        }
+    }
 }
 
 /// Attempts to assemble a .cb file, creating a .cbx file in the process.
@@ -72,11 +76,30 @@ Returns              0   on successful assembly
 */
 
 fn assemble(file: String) -> i16 {
-    return -5;
-    // todo
+    let contents = fs::read_to_string(file).expect("");
+    let lines: Vec<&str> = contents.lines().collect();
+    let mut output: String = String::new();
+    let mut current_line: u8 = 0;
+    let max_lines = lines.len() as u8;
+
+    // Now we actually assemble the damn thing....
+    for line in &lines {
+        let x = line_to_instruction(line.to_string(), current_line, max_lines);
+        if x < 0 {
+            show_error(x, current_line);
+            return x;
+        } else {
+            output.push_str(&swedish_format(x));
+            println!("{x}");
+            output.push(' ');
+        }
+        current_line += 1;
+    }
+    println!("Output stored: {}", output);
+    return 0;
 }
 
-/// Attempts to convert a line of .cb code to a hex between 0..ff.
+/// Attempts to convert a line of .cb code to a Swedish number between "noll" and "tvåhundrafemtiofem" (however, in pra)
 fn convert_line(line: String) -> String {
     return String::new();
 }
@@ -92,6 +115,12 @@ fn line_to_instruction(line: String, cur_line: u8, max_lines: u8) -> i16 {
     // Success values are >= 0, fail values are < 0
     let mut instruction: u8 = 0;
     let words: Vec<&str> = line.split(' ').collect();
+    if words.len() == 1 && words[0] == "" { // empty line
+        return 0;
+    } else if words[0].starts_with("#") { // comment
+        return 0;
+    }
+    
 
     // set the opcode to the leftmost bits of the instruction
     instruction += 0b00100000
@@ -165,9 +194,13 @@ fn line_to_instruction(line: String, cur_line: u8, max_lines: u8) -> i16 {
     // jmp is of the type "%val"
     } else if (instruction / 0b00100000 == 0b101) {
         // jump
-
-        let jump_target: u8 = words[1].parse().unwrap();
-
+        
+        // set the jump target
+        let mut jump_target: u8 = words[1].parse::<u8>().unwrap();
+        if jump_target == 0 || jump_target > 32 {
+            return -3;   // ValueError
+        }
+        jump_target -= 1;
         if jump_target > max_lines {
             return -6; // SegFaultError
         } else if jump_target == cur_line {
@@ -185,13 +218,19 @@ fn line_to_instruction(line: String, cur_line: u8, max_lines: u8) -> i16 {
                 "b" => 0b01,
                 "c" => 0b10,
                 "s" => 0b11,
-                " " => return -4, // spaceerror
+                " " => return -4, // SpaceError
                 _ => return -1,   // invalid register
             };
 
         // set the jump target
-        let jump_target: u8 = words[1].parse().unwrap();
-
+        let mut jump_target: u8 = words[2].parse::<u8>().unwrap();
+        if jump_target == 0 {
+            return -3; // ValueError
+        }
+        jump_target -= 1;
+        if jump_target > 8 {
+            return -3; // ValueError
+        }
         if jump_target > max_lines {
             return -6; // SegFaultError
         } else if jump_target == cur_line {
@@ -232,7 +271,6 @@ fn bin_format(num: i16) -> String {
 }
 
 fn swedish_format(num: i16) -> String {
-
     if num == 0 {
         return String::from("noll");
     }
@@ -241,59 +279,157 @@ fn swedish_format(num: i16) -> String {
         1 => "etthundra",
         2 => "tvåhundra",
         _ => "",
-    }.to_string();
+    }
+    .to_string();
     let mut ten_string = String::new();
     let mut one_string = String::new();
 
     if num % 100 <= 10 || num % 100 >= 20 {
-    ten_string = match (num - 100 * (num/100)) / 10{
-        0 => "",
-        1 => "tio",
-        2 => "tjugo",
-        3 => "trettio",
-        4 => "fyrtio",
-        5 => "femtio",
-        6 => "sextio",
-        7 => "sjuttio",
-        8 => "åttio",
-        9 => "nittio",
-        _ => panic!("Error when calculating ten_string for {}", num),
-    }.to_string();
+        ten_string = match (num - 100 * (num / 100)) / 10 {
+            0 => "",
+            1 => "tio",
+            2 => "tjugo",
+            3 => "trettio",
+            4 => "fyrtio",
+            5 => "femtio",
+            6 => "sextio",
+            7 => "sjuttio",
+            8 => "åttio",
+            9 => "nittio",
+            _ => panic!("Error when calculating ten_string for {}", num),
+        }
+        .to_string();
 
-    one_string = match (num % 10) {
-        0 => "",
-        1 => "ett",
-        2 => "två",
-        3 => "tre",
-        4 => "fyra",
-        5 => "fem",
-        6 => "sex",
-        7 => "sju",
-        8 => "åtta",
-        9 => "nio",
-        _ => panic!("Math error")
-    }.to_string();
+        one_string = match (num % 10) {
+            0 => "",
+            1 => "ett",
+            2 => "två",
+            3 => "tre",
+            4 => "fyra",
+            5 => "fem",
+            6 => "sex",
+            7 => "sju",
+            8 => "åtta",
+            9 => "nio",
+            _ => panic!("Math error"),
+        }
+        .to_string();
+    } else {
+        ten_string = match (num % 100) {
+            11 => "elva",
+            12 => "tolv",
+            13 => "tretton",
+            14 => "fjorton",
+            15 => "femton",
+            16 => "sexton",
+            17 => "sjutton",
+            18 => "arton",
+            19 => "nitton",
+            _ => panic!("Error when calculating ten_string for teen number {}", num),
+        }
+        .to_string();
+        one_string = String::new();
+    }
 
-} else {
-    ten_string = match (num % 100) {
-        11 => "elva",
-        12 => "tolv",
-        13 => "tretton",
-        14 => "fjorton",
-        15 => "femton",
-        16 => "sexton",
-        17 => "sjutton",
-        18 => "arton",
-        19 => "nitton",
-        _ => panic!("Error when calculating ten_string for teen number {}", num),
-    }.to_string();
-    one_string = String::new();
+    hundred_string.push_str(&ten_string);
+    hundred_string.push_str(&one_string);
+
+    return hundred_string;
 }
 
-hundred_string.push_str(&ten_string);
-hundred_string.push_str(&one_string);
+fn swedish_to_decimal(string: String) -> i16 {
+    let mut result = 0;
 
-return hundred_string;
+    // Hundreds
+    if string.starts_with("tvåhundra") {
+        result += 200;
+    }
+
+    if string.starts_with("etthundra") {
+        result += 100;
+    }
+
+    // Tens
+
+    if string.contains("tio") {
+        result += 10;
+    }
+
+    if string.contains("tjugo") {
+        result += 20;
+    }
+
+    // Big brain move
+    if string.contains("trettio") {
+        result += 20;
+    }
+
+    if string.contains("fyrtio") {
+        result += 30;
+    }
+
+    if string.contains("femtio") {
+        result += 40;
+    }
+
+    if string.contains("sextio") {
+        result += 50;
+    }
+
+    if string.contains("sjuttio") {
+        result += 60;
+    }
+
+    if string.contains("åttio") {
+        result += 70;
+    }
+
+    if string.contains("nittio") {
+        result += 80;
+    }
+    // Big brain move ends
+
+    // Ones and teens
+
+    if string.ends_with("ett") {
+        result += 1;
+    } else if string.ends_with("två") {
+        result += 2;
+    } else if string.ends_with("tre") {
+        result += 3;
+    } else if string.ends_with("fyra") {
+        result += 4;
+    } else if string.ends_with("fem") {
+        result += 5;
+    } else if string.ends_with("sex") {
+        result += 6;
+    } else if string.ends_with("sju") {
+        result += 7;
+    } else if string.ends_with("åtta") {
+        result += 8;
+    } else if string.ends_with("nio") {
+        result += 9;
+    } else if string.ends_with("elva") {
+        result += 11;
+    } else if string.ends_with("tolv") {
+        result += 12;
+    } else if string.ends_with("tretton") {
+        result += 13;
+    } else if string.ends_with("fjorton") {
+        result += 14;
+    } else if string.ends_with("femton") {
+        result += 15;
+    } else if string.ends_with("sexton") {
+        result += 16;
+    } else if string.ends_with("sjutton") {
+        result += 17;
+    } else if string.ends_with("arton") {
+        result += 18;
+    } else if string.ends_with("nitton") {
+        result += 19;
+    }
+
+    return result;
 }
 
 // format!("{:b}", line_to_instruction("set a 4".to_string(), 0, 1)));
