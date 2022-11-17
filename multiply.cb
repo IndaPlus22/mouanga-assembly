@@ -22,7 +22,7 @@ add s s
 
 # Modus operando (factorial):
 
-        s = factorialnumber
+        s = factorialnumber (at start of program)
 
 # Then loop:
 
