@@ -1,0 +1,33 @@
+jmp 31
+jmp 17          goto factorial
+jmp 25          end program
+
+# multiply
+bez c 2         if c is not 0 then continue loop, if c is 0 goto line 2 (goto factorial)
+sbv c 1
+add a b
+jmp 6           continue loop
+
+
+
+
+
+# factorial
+bez s 4         end program if s = 0
+sbv s 1
+set b 0         
+add b s         aka set b to s
+set c 0         this line is probably not necessary since c should be 0 right now but you never know
+add c s         aka set c to s
+jmp 6           goto multiply
+
+# end program
+set s 2         print value of a
+spc
+set s 3         end program
+spc
+
+# start program
+set s 1         get stdin
+spc
+jmp 17          goto factorial
