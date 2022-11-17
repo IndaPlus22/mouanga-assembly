@@ -14,19 +14,19 @@ C♭ (pronounced c-flat, or "cess" in Swedish) is like C but one step lower*, ju
 ## Instruction set
 
 
-ADV $r0, $r1, %val  (0b000 | 0) - calculate $r1 + %val and store it in $r0. Note: registers can overflow. %val can be negative.
+ADV $r0, %val       (0b000 | 0) - set $r0 to $r0 + %val. Note: registers can overflow. %val can be negative.
 
 SET $r0, %val       (0b001 | 1) - set $r0 to %val
 
 CPY $r0, $r1        (0b010 | 2) - set $r0 to $r1
 
-ADD $r0, $r1, $r2   (0b011 | 3) - calculate $r1 + $r2 and store it in $r0. Note: registers can overflow
+ADD $r0, $r1        (0b011 | 3) - set $r0 to $r0 + $r1. Note: registers can overflow
 
-SUB $r0, $r1, $r2   (0b100 | 4) - calculate $r1 - $r2 and store it in $r0. Note: registers can underflow
+SUB $r0, $r1        (0b100 | 4) - set $r0 to $r0 - $r1. Note: registers can underflow
 
 JMP %ln             (0b101 | 5) - jump to line number %ln
 
-BEQ $r0, $r1, $ln   (0b110 | 6) - if $r0 and $r1 are equal, jump to line $ln, else continue program
+BEZ $r0, $ln        (0b110 | 6) - if $r0 is 0, jump to line $ln, else continue program
 
 SPC                 (0b111 | 7) - performs an action depending on the value of **S**
 
