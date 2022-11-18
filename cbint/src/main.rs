@@ -1,79 +1,102 @@
 // An interactive 
 
-const EXIT_STRINGS: [&str; 2] = [
-    "SUCCESS",  // 0
-    "SPC_CRASH" // 1
-    ];
+const a: usize = 0;
+const b: usize = 1;
+const c: usize = 2;
+const s: usize = 3;
+
 
 fn main() {
-    let mut prg = Program {
-        a: 0,
-        b: 0,
-        c: 0,
-        s: 0,
-        running: true,
-        cur_line: 1,
-    };
-    println!("s is equal to {}", prg.s);
-    prg.set(self.s, 3);
-    println!("s is equal to {}", prg.s);
+    let mut prg = start_program();
+    println!("s is equal to {}", prg.registers[s]);
+    prg.set(s, prg.val);
+    println!("s is equal to {}", prg.registers[s]);
 }
 
 struct Program {
-    a: i32,
-    b: i32,
-    c: i32,
-    s: i32,
+    registers: [usize; 4],
+	r0: usize,
+	r1: usize,
+	val: u8,
     running: bool,
-    cur_line: i32,
+    cur_line: usize,
 }
 
 impl Program {
-    fn adv(&mut self, r0: &mut i32, val: u8) {
-        *r0 += val as i32;
+    fn adv(&mut self, r0: usize, val: u8) {
+        self.registers[r0] += val as usize;
     }
 
-    fn set(&mut self, r0: &mut i32, val: u8) {
-        *r0 = val as i32;
+    fn set(&mut self, r0: usize, val: u8) {
+        self.registers[r0] = val as usize;
     }
 
-    fn sbv(&mut self, r0: &mut i32, val: u8) {
-        *r0 -= val as i32;
+    fn sbv(&mut self, r0: usize, val: u8) {
+        self.registers[r0] -= val as usize;
     }
 
-    fn add(&mut self, r0: &mut i32, r1: i32) {
-        *r0 += r1;
+    fn add(&mut self, r0: usize, r1: usize) {
+        self.registers[r0] += self.registers[r1];
     }
 
-    fn sub(&mut self, r0: &mut i32, r1: i32) {
-        *r0 -= r1;
+    fn sub(&mut self, r0: usize, r1: usize) {
+        self.registers[r0] -= r1;
     }
 
-    fn jmp(&mut self, val: u8, cur_line: &mut i32) {
-        *cur_line = val as i32;
+    fn jmp(&mut self, val: u8) {
+        self.cur_line = val as usize;
     }
 
-    fn bez(&mut self, r0: i32, val: u8, cur_line: &mut i32) {
-        if r0 == 0 {
-            *cur_line = (val + 1) as i32;
+    fn bez(&mut self, r0: usize, val: u8) {
+        if self.registers[r0] == 0 {
+            cur_line = (val + 1) as usize;
         }
     }
 
     fn spc(&mut self) {
-        if self.s == 0 {
+        if self.registers[3] == 0 {
             // (do nothing)
-        } else if self.s == 1 {
+        } else if self.registers[3] == 1 {
             // (get input)
-        } else if self.s == 2 {
-            println!("{}", self.a)
-        } else if self.s == 3 {
+        } else if self.registers[3] == 2 {
+            println!("{}", self.registers[0])
+        } else if self.registers[3] == 3 {
             self.running = false; 
-        } else {
-            println!("The program crashed due to an spc call with s value {}", self.s);
+        } else 
+			self.running = false;
+            println!("The program crashed due to an spc call with s value {}", self.registers[3]);
         }
     }
-
+	
+	fn end(&mut self) { 
+	
+		self.running = false;
+		self.init_variables();
+	}
+	
+	fn start_program() -> Program { 
+		Program { 
+			registers: [0; 4]
+			r0: 0,
+			r1: 0,
+			val: 0,
+			running: true,
+			cur_line: 0,
+		}
+		
+	
+	fn init_variables(&mut self) {
+	
+		self.registers = [0; 4];
+		self.val = 0;
+		self.cur_line = 1;
+	
+	}
+		
+	
 }
+	
+
 // copied from cbasm of course
 
 fn bin_format(num: i16) -> String {
